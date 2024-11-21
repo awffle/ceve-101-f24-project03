@@ -3,7 +3,7 @@ title: "CEVE 101: Project 03"
 author: "Diego Delgado (dd108)"
 date: "2024-10-23"
 output: html_document
-kernel: julia-1.11
+engine: julia
 code-annotations: hover
 format:
     html: default
@@ -26,7 +26,7 @@ using RainwaterHarvesting         # <2>
 Next, we specify the path to the rainfall data file and read it in.
 
 ```{julia}
-filepath = "data/1.txt" # <1>   
+filepath = "data/418.txt" # <1>   
 rainfall_data = RainfallData(filepath) # <2>
 ```
 
@@ -50,54 +50,33 @@ plot(rainfall_data) # <1>
 
 ### Discussion
 
-*Insert discussion here*
+Missing data during drought years prevents researchers from predicting when future droughts will end and how intense they may be.
 
 ## Understanding the Theoretical Model
 
-Let's explore the model that simulates the rainwater harvesting system.
+The assumption that each household begins using water from the tank after the 150th day of the year may not be accurate in all climates.
+The model can be improved by introducing a variable threshold for the start of consumption based on average climate data for the region.
 
-### Mass Balance Equation
+Example: C_t = C_daily if day of year > d_start; 0 if day of year < or = d_start
+d_start is the day that the drought starts
 
-The mass balance model for the rainwater tank is given by:
 
-$$
-V_{t+1} = V_t + Q_t - C_t | 0 \leq V_t \leq V_\text{max}
-$$
+The assumption that each household consumes 74.1 liters per day during the dry season may not be accurate considering varying household sizes.
+The model can be improved by using a variable consumption rate, which would depend on household size, number of water-using appliances, and potentialy other factors.
 
-- $V_t$: the volume of water in the tank at time $t$
-- $Q_t$ is the volume of water added to the tank at time $t$
-- $C_t$ is the volume of water consumed at time $t$
-- $V_\text{max}$: the maximum volume of the tank
+Example: C_daily = C_person * N_household * (1 + A_w * W_used)
+C_person is the concumption per person per day
+N_household is the number of people in the household
+A_w is the number of appliances that use water
+W_used is the amount of water used per appliance
 
-### Inflow ($Q_t$)
 
-Inflow is calculated as
+The assumption that the runoff coefficient is constant is not accurate since wind speed will be a factor, contributing to more spilling.
+The model can be improved by incorporating a wind speed variable.
 
-$$
-Q_t = \eta \times A \times \max(P_t - F, 0).
-$$
+Example: Q_t = W * eta * A * max(P_t - F,0)
+Example (2): Q_t = eta * A * max(P_t - F,0) - W_t
 
-- $\eta$: the runoff coefficient, which accounts for losses due to evaporation, spilling, etc.
-- $A$: the area of the roof (we will use square meters)
-- $P_t$: the precipitation at time $t$ (we will use millimeters per day)
-- $F$: the first flush volume (we will use millimeters). The first flush volume is often discarded, so that each time it rains the first bit of water (which is usually dirty) is not used (see [here](https://rainwaterharvesting.tamu.edu/pre-storage-treatment/) for more details).
-
-### Consumption
-
-Consumption is modeled as:
-
-$$
-C_t = \begin{cases}
-    74.1 & \quad \text{day of year} > 150 \\
-    0 & \quad \text{day of year} \leq 150
-\end{cases}
-$$
-
-This makes two major assumptiuons.
-First, the household begins using water from the tank after the 150th day of the year.
-This is based on the idea that the rainy season lasts for about the first 150 days of the year, and so they may have other sources of water before then.
-The second assumption is that each household consumes 74.1 liters per day during the dry season.
-How does this compare to your household's water usage?
 
 ## Model Implementation and Testing
 
